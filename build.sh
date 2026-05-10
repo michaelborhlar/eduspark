@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
-# Render build script
 set -o errexit
 
+echo ">>> Python version:"
+python --version
+
+echo ">>> Installing dependencies..."
 pip install -r requirements.txt
 
-# Create static dir if missing so collectstatic doesn't warn
+echo ">>> Creating required directories..."
 mkdir -p static staticfiles media
 
+echo ">>> Collecting static files..."
 python manage.py collectstatic --noinput
-python manage.py migrate
 
-# Seed subjects automatically on first deploy
-python manage.py shell << 'PYEOF'
+echo ">>> Making migrations (auto-generate from models)..."
+python manage.py makemigrations core --noinput
+
+echo ">>> Running migrations..."
+python manage.py migrate --noinput
+
+echo ">>> Seeding subjects..."
+python manage.py shell -c "
 from core.models import Subject
 subjects = [
     'Mathematics', 'English Language', 'Literature in English',
@@ -25,5 +34,7 @@ for name in subjects:
     _, made = Subject.objects.get_or_create(name=name)
     if made:
         created += 1
-print(f"Subjects ready: {Subject.objects.count()} total ({created} new)")
-PYEOF
+print(f'Subjects ready: {Subject.objects.count()} total ({created} new)')
+"
+
+echo ">>> Build complete!"

@@ -66,7 +66,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Only include static dir if it actually exists — fixes Render W004 warning
+_STATIC_DIR = BASE_DIR / 'static'
+if _STATIC_DIR.exists():
+    STATICFILES_DIRS = [_STATIC_DIR]
+else:
+    STATICFILES_DIRS = []
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'

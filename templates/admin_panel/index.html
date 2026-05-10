@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EduSpark — Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--sb:#1a1d2e;--sbt:#9da3c0;--acc:#6c63ff;--acc2:#00c896;
+  --danger:#ef4444;--warn:#f59e0b;--text:#1e2130;--muted:#6b7280;--border:#e5e7eb;--r:11px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sb{width:232px;min-height:100vh;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;overflow-y:auto}
+.sb-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo .nm{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:#fff}
+.sb-logo .nm span{color:#a5f3e2}
+.sb-logo .rl{font-size:10px;color:var(--sbt);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.sb-nav{padding:10px 0;flex:1}
+.sb-sec{padding:7px 15px 3px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:rgba(157,163,192,.4);margin-top:5px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 17px;cursor:pointer;font-size:13px;color:var(--sbt);transition:all .15s;border-left:3px solid transparent}
+.ni:hover{background:rgba(255,255,255,.05);color:#fff}
+.ni.on{background:rgba(108,99,255,.15);color:#fff;border-left-color:var(--acc)}
+.ni .ic{font-size:14px;width:18px;text-align:center}
+.sb-foot{padding:13px 16px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+.adm{display:flex;align-items:center;gap:9px}
+.adm-av{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6c63ff,#00c896);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.adm-nm{font-size:12px;font-weight:600;color:#fff}
+.adm-rl{font-size:10px;color:var(--sbt)}
+.main{margin-left:232px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;flex-shrink:0}
+.topbar h1{font-size:17px;font-weight:700}
+.content{padding:24px;flex:1}
+.view{display:none}.view.active{display:block}
+.btn{padding:7px 14px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btn-p{background:var(--acc);color:#fff}.btn-p:hover{background:#5a52e8}
+.btn-g{background:var(--acc2);color:#fff}.btn-g:hover{background:#00a87a}
+.btn-o{background:#fff;color:var(--text);border:1px solid var(--border)}.btn-o:hover{border-color:var(--acc);color:var(--acc)}
+.btn-xs{padding:4px 9px;font-size:11px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.sbox{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.sbox .sv{font-size:28px;font-weight:700;font-family:'Space Mono',monospace}
+.sbox .sl{font-size:11px;color:var(--muted);margin-top:3px}
+.sbox.bl .sv{color:var(--acc)}.sbox.gr .sv{color:var(--acc2)}.sbox.or .sv{color:var(--warn)}.sbox.rd .sv{color:var(--danger)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.card-hd h2{font-size:14px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 11px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:11px 11px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(108,99,255,.02)}
+.tbl-wrap{overflow-x:auto}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600;border:1px solid}
+.bg{background:rgba(0,200,150,.1);color:#00a87a;border-color:rgba(0,200,150,.25)}
+.bb{background:rgba(108,99,255,.1);color:var(--acc);border-color:rgba(108,99,255,.25)}
+.bo{background:rgba(245,158,11,.1);color:#d97706;border-color:rgba(245,158,11,.25)}
+.br{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.25)}
+.bx{background:#f3f4f6;color:var(--muted);border-color:var(--border)}
+.fg{margin-bottom:12px}.fg.full{grid-column:1/-1}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=number],input[type=datetime-local],input[type=password],input[type=url],select,textarea{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);background:#fff}
+textarea{min-height:80px;resize:vertical}
+.help{font-size:10px;color:var(--muted);margin-top:3px}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.trow:last-child{border-bottom:none}
+.tlbl{font-size:13px;font-weight:500}.tsub{font-size:11px;color:var(--muted);margin-top:2px}
+.tog{position:relative;display:inline-block;width:40px;height:21px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sldr{position:absolute;cursor:pointer;inset:0;background:#d1d5db;border-radius:100px;transition:background .2s}
+.sldr:before{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;left:3px;top:3px;transition:transform .2s}
+.tog input:checked+.sldr{background:var(--acc)}
+.tog input:checked+.sldr:before{transform:translateX(19px)}
+.qb{border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;background:#fff}
+.qb-n{font-size:10px;font-weight:700;color:var(--acc);text-transform:uppercase;margin-bottom:9px}
+.opts-b{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.orow{display:flex;align-items:center;gap:7px}
+.olbl{width:24px;height:24px;border-radius:5px;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:background .2s}
+.olbl.c{background:var(--acc2)}
+.rm{position:absolute;top:10px;right:10px;background:none;border:none;font-size:15px;cursor:pointer;color:var(--muted)}
+.rm:hover{color:var(--danger)}
+.upz{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--bg)}
+.upz:hover{border-color:var(--acc)}.upz.done{border-color:var(--acc2);background:rgba(0,200,150,.04)}
+.upz input{display:none}.upz .ui{font-size:22px;margin-bottom:4px}.upz p{font-size:11px;color:var(--muted)}
+.sub-card{border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:#fff}
+.sub-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.sub-nm{font-size:13px;font-weight:700}.sub-mt{font-size:11px;color:var(--muted);margin-top:2px}
+.ans-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12px;line-height:1.7;margin:8px 0;white-space:pre-wrap}
+.mbars{display:flex;flex-direction:column;gap:8px}
+.mbar-r{display:flex;align-items:center;gap:9px;font-size:12px}
+.mbar-l{width:70px;color:var(--muted);font-size:11px}
+.mbar-t{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
+.mbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.mbar-v{width:32px;text-align:right;font-weight:600;font-size:11px}
+.alert{padding:9px 13px;border-radius:7px;font-size:12px;margin-bottom:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.al-i{background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);color:var(--acc)}
+.al-s{background:rgba(0,200,150,.08);border:1px solid rgba(0,200,150,.2);color:#00a87a}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:28px 14px;overflow-y:auto;backdrop-filter:blur(3px)}
+.mov.open{display:flex}
+.md{background:#fff;border-radius:13px;padding:26px;max-width:620px;width:100%}
+.md-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.md-hd h2{font-size:17px;font-weight:700}
+.md-cl{background:none;border:none;font-size:19px;cursor:pointer;color:var(--muted);line-height:1}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1d2e 0%,#252842 100%);width:100%}
+.login-card{background:#fff;border-radius:14px;padding:36px;max-width:400px;width:90%}
+.login-card h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-card .sub{color:var(--muted);font-size:12px;margin-bottom:24px}
+.btn-full{width:100%;padding:11px;font-size:13px;font-weight:600;border-radius:8px;background:var(--acc);color:#fff;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;margin-top:3px}
+.btn-full:hover{background:#5a52e8}
+.err{color:var(--danger);font-size:11px;margin-top:5px;min-height:16px}
+.toast{position:fixed;bottom:18px;right:18px;z-index:999;padding:11px 16px;border-radius:8px;font-size:12px;font-weight:500;transform:translateY(50px);opacity:0;transition:all .3s;max-width:280px;background:#1a1d2e;color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:#00a87a}.toast.err{background:var(--danger)}
+.spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite;margin:36px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld{text-align:center;padding:36px;color:var(--muted)}
+hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+@media(max-width:768px){.sb{transform:translateX(-100%)}.main{margin-left:0}.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<aside class="sb" id="sidebar" style="display:none">
+  <div class="sb-logo"><div class="nm">Edu<span>Spark</span> Admin</div><div class="rl">Teacher Dashboard</div></div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <div class="ni on" onclick="nav('dash',this)"><span class="ic">📊</span> Dashboard</div>
+    <div class="ni"    onclick="nav('students',this)"><span class="ic">👨‍🎓</span> Students & Classes</div>
+    <div class="sb-sec">Content</div>
+    <div class="ni"    onclick="nav('qbank',this)"><span class="ic">❓</span> Question Bank</div>
+    <div class="ni"    onclick="nav('create-test',this)"><span class="ic">📝</span> Create Test</div>
+    <div class="ni"    onclick="nav('create-assign',this)"><span class="ic">📋</span> Create Assignment</div>
+    <div class="ni"    onclick="nav('create-assess',this)"><span class="ic">✅</span> Create Assessment</div>
+    <div class="ni"    onclick="nav('videos',this)"><span class="ic">📹</span> Learning Hub</div>
+    <div class="sb-sec">Grading</div>
+    <div class="ni"    onclick="nav('submissions',this)"><span class="ic">📬</span> Submissions</div>
+    <div class="ni"    onclick="nav('grades',this)"><span class="ic">🏆</span> Grade Centre</div>
+  </nav>
+  <div class="sb-foot">
+    <div class="adm">
+      <div class="adm-av">A</div>
+      <div><div class="adm-nm" id="sb-name">Admin</div><div class="adm-rl">Administrator</div></div>
+    </div>
+    <button class="btn btn-o btn-xs" style="margin-top:9px;width:100%" onclick="doLogout()">Logout</button>
+  </div>
+</aside>
+
+<div class="main" id="main-area">
+
+  <div id="view-login" style="display:flex;width:100%">
+    <div class="login-wrap" style="width:100%">
+      <div class="login-card">
+        <h2>Admin Login</h2>
+        <p class="sub">EduSpark Teacher &amp; Admin Portal</p>
+        <div class="fg"><label>Username</label><input id="l-user" type="text" placeholder="admin" autocomplete="username"></div>
+        <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="err" id="l-err"></div>
+        <button class="btn-full" onclick="doLogin()">Sign In →</button>
+        <p style="font-size:10px;color:var(--muted);margin-top:14px;text-align:center">
+          Use your Django superuser credentials.<br>
+          Create one: <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">python manage.py createsuperuser</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="portal" style="display:none;flex:1;flex-direction:column">
+    <header class="topbar">
+      <h1 id="pg-title">Dashboard</h1>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="btn btn-p btn-xs" onclick="nav('create-test',null)">+ New Test</button>
+        <span id="pending-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px"></span>
+      </div>
+    </header>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dash">
+        <div class="stats">
+          <div class="sbox bl"><div class="sv" id="ds-s">—</div><div class="sl">Total Students</div></div>
+          <div class="sbox gr"><div class="sv" id="ds-a">—</div><div class="sl">Active Activities</div></div>
+          <div class="sbox or"><div class="sv" id="ds-p">—</div><div class="sl">Pending Reviews</div></div>
+          <div class="sbox rd"><div class="sv" id="ds-t">—</div><div class="sl">Total Submissions</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-hd"><h2>Students per Class</h2></div>
+            <div class="mbars" id="class-bars"><div class="ld"><div class="spin"></div></div></div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div class="card-hd"><h2>Quick Actions</h2></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-p" style="justify-content:flex-start" onclick="nav('create-test',null)">📝 Create New Test</button>
+              <button class="btn btn-g" style="justify-content:flex-start" onclick="nav('create-assess',null)">✅ Create Assessment</button>
+              <button class="btn btn-o" style="justify-content:flex-start" onclick="nav('qbank',null)">❓ Add to Question Bank</button>
+              <button class="btn btn-o" style="justify-content:flex-start" onclick="nav('videos',null)">📹 Upload Learning Video</button>
+              <button class="btn btn-o" style="justify-content:flex-start" onclick="nav('submissions',null)">📬 Review Submissions</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h2>All Activities</h2><button class="btn btn-p btn-xs" onclick="nav('create-test',null)">+ Create</button></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Title</th><th>Type</th><th>Class</th><th>Status</th><th>Closes</th><th>Submissions</th><th>Action</th></tr></thead>
+            <tbody id="act-tbl"><tr><td colspan="7"><div class="ld"><div class="spin"></div></div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- STUDENTS -->
+      <div class="view" id="view-students">
+        <div class="alert al-i">ℹ️ Students are automatically added to their class table when they register on the student portal. No manual enrolment needed.</div>
+        <div id="roster-wrap"><div class="ld"><div class="spin"></div></div></div>
+      </div>
+
+      <!-- QUESTION BANK -->
+      <div class="view" id="view-qbank">
+        <div class="card">
+          <div class="card-hd">
+            <h2>Question Bank</h2>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <select id="qb-sf" style="width:140px;font-size:12px" onchange="loadQBank()"><option value="">All Subjects</option></select>
+              <button class="btn btn-p btn-xs" onclick="openModal('modal-add-q')">+ Add Question</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Type</th><th>Image</th><th>Options</th><th>Action</th></tr></thead>
+            <tbody id="qb-tbl"><tr><td colspan="7"><div class="ld"><div class="spin"></div></div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- CREATE TEST -->
+      <div class="view" id="view-create-test">
+        <div class="card">
+          <div class="card-hd"><h2>Create New Test</h2></div>
+          <div class="alert al-i">📌 Tests draw random questions from the bank. Every student gets a unique set with shuffled option order — no two students see identical papers.</div>
+          <div class="fgrid">
+            <div class="fg"><label>Test Title</label><input id="ct-title" type="text" placeholder="e.g. Mid-term Algebra Test"></div>
+            <div class="fg"><label>Subject</label><select id="ct-subj"></select></div>
+            <div class="fg"><label>Target Class</label>
+              <select id="ct-cls"><option value="ALL">All Classes</option><option value="SSS1">SSS 1</option><option value="SSS2">SSS 2</option><option value="SSS3">SSS 3</option><option value="JSS1">JSS 1</option><option value="JSS2">JSS 2</option><option value="JSS3">JSS 3</option></select>
+            </div>
+            <div class="fg"><label>Questions to Draw from Bank</label><input id="ct-count" type="number" value="20" min="1" max="200"></div>
+            <div class="fg"><label>Answer Type</label>
+              <select id="ct-atype"><option value="mcq">Multiple Choice (MCQ)</option><option value="typed">Type Answer</option><option value="typed_image">Type Answer + Upload Image</option></select>
+            </div>
+            <div class="fg"><label>Description for Students</label><textarea id="ct-desc" placeholder="Brief description…" style="min-height:55px"></textarea></div>
+            <div class="fg"><label>Time Limit (minutes)</label><input id="ct-time" type="number" placeholder="e.g. 45 — blank = no limit"><div class="help">Leave blank for no time limit</div></div>
+            <div class="fg"><label>Open Date &amp; Time</label><input id="ct-open" type="datetime-local"><div class="help">Blank = open immediately on publish</div></div>
+            <div class="fg"><label>Close Date &amp; Time</label><input id="ct-close" type="datetime-local"><div class="help">Blank = no closing date</div></div>
+            <div class="fg"><label>Show Results to Student?</label>
+              <select id="ct-showans"><option value="false">No — teacher reviews first</option><option value="true">Yes — show score immediately</option></select>
+            </div>
+          </div>
+          <hr>
+          <h3 style="font-size:12px;font-weight:700;margin-bottom:12px">⚙️ Randomisation Settings</h3>
+          <div class="trow"><div><div class="tlbl">Randomise question order</div><div class="tsub">Each student sees questions in a different order</div></div><label class="tog"><input type="checkbox" id="ct-rord" checked><span class="sldr"></span></label></div>
+          <div class="trow"><div><div class="tlbl">Randomise MCQ option order</div><div class="tsub">A/B/C/D shuffled differently per student</div></div><label class="tog"><input type="checkbox" id="ct-ropt" checked><span class="sldr"></span></label></div>
+          <div class="trow"><div><div class="tlbl">Randomise numerical values</div><div class="tsub">Allow values in questions to vary per student</div></div><label class="tog"><input type="checkbox" id="ct-rval" checked><span class="sldr"></span></label></div>
+          <div class="trow"><div><div class="tlbl">Allow navigating back</div><div class="tsub">Students can return to previous questions</div></div><label class="tog"><input type="checkbox" id="ct-back" checked><span class="sldr"></span></label></div>
+          <div class="trow"><div><div class="tlbl">Require picture upload per answer</div><div class="tsub">Students must upload a photo with each answer</div></div><label class="tog"><input type="checkbox" id="ct-reqimg"><span class="sldr"></span></label></div>
+          <div style="margin-top:18px;display:flex;gap:9px;flex-wrap:wrap">
+            <button class="btn btn-o" onclick="createActivity('test',false)">Save as Draft</button>
+            <button class="btn btn-p" onclick="createActivity('test',true)">Publish Test →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE ASSIGNMENT -->
+      <div class="view" id="view-create-assign">
+        <div class="card">
+          <div class="card-hd"><h2>Create Weekly Assignment</h2></div>
+          <div class="fgrid">
+            <div class="fg"><label>Title</label><input id="ca-title" type="text" placeholder="e.g. Essay: Nigerian Civil War"></div>
+            <div class="fg"><label>Subject</label><select id="ca-subj"></select></div>
+            <div class="fg"><label>Target Class</label>
+              <select id="ca-cls"><option value="ALL">All Classes</option><option value="SSS1">SSS 1</option><option value="SSS2">SSS 2</option><option value="SSS3">SSS 3</option></select>
+            </div>
+            <div class="fg"><label>Answer Format</label>
+              <select id="ca-atype"><option value="typed">Type Answer</option><option value="typed_image">Type Answer + Upload Image</option><option value="mcq">MCQ Only</option></select>
+            </div>
+            <div class="fg"><label>Due Date (optional)</label><input id="ca-close" type="datetime-local"></div>
+            <div class="fg"><label>Time Limit — mins (optional)</label><input id="ca-time" type="number" placeholder="Blank = no timer"></div>
+            <div class="fg full"><label>Instructions for Students</label><textarea id="ca-desc" placeholder="Write instructions here…"></textarea></div>
+          </div>
+          <hr>
+          <div class="card-hd"><h2>Questions</h2><button class="btn btn-o btn-xs" onclick="addAssignQ()">+ Add Question</button></div>
+          <div id="assign-qs"><p style="font-size:12px;color:var(--muted)">Click "+ Add Question" to begin.</p></div>
+          <div style="margin-top:16px;display:flex;gap:9px">
+            <button class="btn btn-o" onclick="createActivity('assignment',false)">Save Draft</button>
+            <button class="btn btn-p" onclick="createActivity('assignment',true)">Publish Assignment →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE ASSESSMENT -->
+      <div class="view" id="view-create-assess">
+        <div class="card">
+          <div class="card-hd"><h2>Create Weekly Assessment</h2></div>
+          <div class="alert al-s">✅ Enable <strong>Show Answers Immediately</strong> so students see correct answers + explanations right after they submit.</div>
+          <div class="fgrid">
+            <div class="fg"><label>Title</label><input id="aw-title" type="text" placeholder="e.g. Weekly Biology Check"></div>
+            <div class="fg"><label>Subject</label><select id="aw-subj"></select></div>
+            <div class="fg"><label>Target Class</label>
+              <select id="aw-cls"><option value="ALL">All Classes</option><option value="SSS1">SSS 1</option><option value="SSS2">SSS 2</option><option value="SSS3">SSS 3</option></select>
+            </div>
+            <div class="fg"><label>Time Limit — mins (optional)</label><input id="aw-time" type="number" placeholder="e.g. 20"></div>
+            <div class="fg"><label>Open Date (optional)</label><input id="aw-open" type="datetime-local"></div>
+            <div class="fg"><label>Close Date (optional)</label><input id="aw-close" type="datetime-local"></div>
+            <div class="fg"><label>Number of Questions to Draw</label><input id="aw-count" type="number" value="10" min="1"></div>
+          </div>
+          <div class="trow" style="margin:12px 0">
+            <div><div class="tlbl">Show correct answers immediately after submission</div><div class="tsub">Students see each answer + your explanation once they submit</div></div>
+            <label class="tog"><input type="checkbox" id="aw-showans" checked><span class="sldr"></span></label>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:9px">
+            <button class="btn btn-o" onclick="createActivity('assessment',false)">Save Draft</button>
+            <button class="btn btn-p" onclick="createActivity('assessment',true)">Publish Assessment →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEOS -->
+      <div class="view" id="view-videos">
+        <div class="card">
+          <div class="card-hd"><h2>Learning Hub Manager</h2></div>
+          <div class="trow" style="margin-bottom:16px">
+            <div><div class="tlbl">Learning Hub visible to students</div><div class="tsub">Toggle to show/hide the entire Learning Hub from student portal</div></div>
+            <label class="tog"><input type="checkbox" checked><span class="sldr"></span></label>
+          </div>
+          <h3 style="font-size:12px;font-weight:700;margin-bottom:12px">Upload New Video</h3>
+          <div class="fgrid">
+            <div class="fg"><label>Topic Title</label><input id="v-title" type="text" placeholder="e.g. Quadratic Equations – Full Lesson"></div>
+            <div class="fg"><label>Subject</label><select id="v-subj"></select></div>
+            <div class="fg"><label>Visible to Class</label>
+              <select id="v-cls"><option value="ALL">All Classes</option><option value="SSS1">SSS 1</option><option value="SSS2">SSS 2</option><option value="SSS3">SSS 3</option></select>
+            </div>
+            <div class="fg"><label>YouTube / Google Drive Link</label><input id="v-url" type="url" placeholder="https://youtube.com/watch?v=…"></div>
+            <div class="fg"><label>Description (optional)</label><textarea id="v-desc" placeholder="Brief topic description…" style="min-height:55px"></textarea></div>
+            <div class="fg"><label>Upload Video File (optional)</label>
+              <div class="upz" id="v-upz" onclick="document.getElementById('v-file').click()">
+                <input type="file" id="v-file" accept="video/*" onchange="handleVidFile(this)">
+                <div class="ui">🎬</div><p><strong>Click to upload</strong> MP4, MOV · Or paste YouTube link above</p>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-p" onclick="uploadVideo()">Publish Video →</button>
+          <hr>
+          <h3 style="font-size:12px;font-weight:700;margin-bottom:12px">Published Videos</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Title</th><th>Subject</th><th>Class</th><th>Visible</th><th>Uploaded</th><th>Actions</th></tr></thead>
+            <tbody id="vid-tbl"><tr><td colspan="6"><div class="ld"><div class="spin"></div></div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- SUBMISSIONS -->
+      <div class="view" id="view-submissions">
+        <div class="card">
+          <div class="card-hd"><h2>Pending Reviews — Typed &amp; Image Answers</h2><span class="badge bo" id="sub-count">0 pending</span></div>
+          <div id="sub-list"><div class="ld"><div class="spin"></div></div></div>
+        </div>
+      </div>
+
+      <!-- GRADE CENTRE -->
+      <div class="view" id="view-grades">
+        <div class="card">
+          <div class="card-hd">
+            <h2>Grade Centre</h2>
+            <div style="display:flex;gap:7px;align-items:center">
+              <select id="grade-cls-f" style="width:130px;font-size:12px" onchange="loadGrades()">
+                <option value="">All Classes</option><option value="SSS1">SSS 1</option><option value="SSS2">SSS 2</option><option value="SSS3">SSS 3</option>
+              </select>
+              <button class="btn btn-o btn-xs" onclick="exportCSV()">📥 Export CSV</button>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Student</th><th>Class</th><th>Activity</th><th>Type</th><th>Score</th><th>Graded</th><th>Submitted</th></tr></thead>
+            <tbody id="grade-tbl"><tr><td colspan="7"><div class="ld"><div class="spin"></div></div></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="mov" id="modal-add-q">
+  <div class="md">
+    <div class="md-hd"><h2>Add Question to Bank</h2><button class="md-cl" onclick="closeModal('modal-add-q')">✕</button></div>
+    <div class="fgrid">
+      <div class="fg"><label>Subject</label><select id="nq-subj"></select></div>
+      <div class="fg"><label>Answer Type</label>
+        <select id="nq-type" onchange="toggleQType(this.value)">
+          <option value="mcq">MCQ</option><option value="typed">Typed Answer</option><option value="typed_image">Typed + Image Upload</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Question Text</label><textarea id="nq-text" placeholder="Type the question here…"></textarea></div>
+    <div class="fg"><label>Add Image / Diagram (optional)</label>
+      <div class="upz" id="nq-upz" onclick="document.getElementById('nq-img').click()">
+        <input type="file" id="nq-img" accept="image/*" onchange="previewQImg(this)">
+        <div class="ui">🖼️</div><p><strong>Click to upload</strong> image or diagram · JPG, PNG</p>
+      </div>
+    </div>
+    <div id="nq-mcq-sec">
+      <label style="margin-bottom:7px">MCQ Options — toggle to mark correct answer</label>
+      <div class="opts-b" id="nq-opts">
+        <div class="orow"><span class="olbl c" id="nql-0">A</span><input type="text" placeholder="Option A (correct)"><label class="tog"><input type="radio" name="nq-cor" value="0" checked><span class="sldr"></span></label></div>
+        <div class="orow"><span class="olbl" id="nql-1">B</span><input type="text" placeholder="Option B"><label class="tog"><input type="radio" name="nq-cor" value="1"><span class="sldr"></span></label></div>
+        <div class="orow"><span class="olbl" id="nql-2">C</span><input type="text" placeholder="Option C"><label class="tog"><input type="radio" name="nq-cor" value="2"><span class="sldr"></span></label></div>
+        <div class="orow"><span class="olbl" id="nql-3">D</span><input type="text" placeholder="Option D"><label class="tog"><input type="radio" name="nq-cor" value="3"><span class="sldr"></span></label></div>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:11px"><label>Explanation (shown to students after assessment submission)</label><textarea id="nq-expl" placeholder="Explain why the correct answer is correct…" style="min-height:60px"></textarea></div>
+    <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-o" onclick="closeModal('modal-add-q')">Cancel</button>
+      <button class="btn btn-p" onclick="saveQuestion()">Add to Bank →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const API='/api';
+let subjects=[],gradeData=[];
+
+function getCookie(n){const v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)');return v?v[2]:null}
+async function api(method,path,body,isForm){
+  const opts={method,headers:{'X-CSRFToken':getCookie('csrftoken')},credentials:'include'};
+  if(body&&!isForm){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body)}
+  else if(isForm){opts.body=body}
+  try{const r=await fetch(API+path,opts);if(r.status===204)return{};return await r.json()}
+  catch{return{detail:'Network error'}}
+}
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+type;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3500);
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+async function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const err=document.getElementById('l-err');err.textContent='';
+  if(!u||!p){err.textContent='Please enter username and password.';return}
+  const fd=new FormData();fd.append('username',u);fd.append('password',p);fd.append('csrfmiddlewaretoken',getCookie('csrftoken'));
+  await fetch('/django-admin/login/?next=/django-admin/',{method:'POST',body:fd,credentials:'include',redirect:'manual'});
+  const me=await api('GET','/auth/me/');
+  if(me&&me.id&&me.is_staff){
+    const stats=await api('GET','/admin/stats/');
+    if(stats.total_students!==undefined){
+      document.getElementById('view-login').style.display='none';
+      document.getElementById('sidebar').style.display='flex';
+      document.getElementById('portal').style.display='flex';
+      document.getElementById('sb-name').textContent=(me.first_name||'Admin')+' '+(me.surname||'');
+      await initPortal();
+    }else err.textContent='Access denied. You need staff/admin privileges.';
+  }else err.textContent='Login failed. Check credentials or run createsuperuser.';
+}
+async function doLogout(){await fetch('/django-admin/logout/',{method:'POST',credentials:'include'});location.reload()}
+
+const TITLES={dash:'Dashboard',students:'Students & Classes',qbank:'Question Bank',
+  'create-test':'Create Test','create-assign':'Create Assignment','create-assess':'Create Assessment',
+  videos:'Learning Hub',submissions:'Submissions Review',grades:'Grade Centre'};
+
+function nav(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const v=document.getElementById('view-'+id);if(v)v.classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('pg-title').textContent=TITLES[id]||id;
+  const loaders={students:loadRoster,qbank:loadQBank,submissions:loadSubmissions,grades:loadGrades,videos:loadVideos,dash:loadDash};
+  if(loaders[id])loaders[id]();
+  if(id.startsWith('create'))populateSubjects();
+}
+
+async function initPortal(){
+  const subs=await api('GET','/admin/subjects/');
+  if(Array.isArray(subs))subjects=subs;
+  await loadDash();
+}
+
+function populateSubjects(){
+  const ids=['ct-subj','ca-subj','aw-subj','v-subj','nq-subj'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  });
+  const sf=document.getElementById('qb-sf');
+  if(sf)sf.innerHTML='<option value="">All Subjects</option>'+subjects.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+}
+
+async function loadDash(){
+  const[stats,acts]=await Promise.all([api('GET','/admin/stats/'),api('GET','/admin/activities/')]);
+  if(stats.total_students!==undefined){
+    document.getElementById('ds-s').textContent=stats.total_students;
+    document.getElementById('ds-a').textContent=stats.active_activities;
+    document.getElementById('ds-p').textContent=stats.pending_reviews;
+    document.getElementById('ds-t').textContent=stats.total_submissions;
+    if(stats.pending_reviews>0){const b=document.getElementById('pending-badge');b.textContent=stats.pending_reviews+' pending';b.style.display='';}
+    const cc=stats.class_counts||{};const max=Math.max(...Object.values(cc),1);
+    document.getElementById('class-bars').innerHTML=Object.entries(cc).map(([k,v])=>
+      `<div class="mbar-r"><span class="mbar-l">${k}</span><div class="mbar-t"><div class="mbar-f" style="width:${Math.round(v/max*100)}%"></div></div><span class="mbar-v">${v}</span></div>`).join('');
+  }
+  if(Array.isArray(acts)){
+    document.getElementById('act-tbl').innerHTML=acts.length?acts.slice(0,15).map(a=>
+      `<tr><td><strong>${a.title}</strong></td>
+       <td><span class="badge ${a.activity_type==='test'?'bb':'bo'}">${a.activity_type}</span></td>
+       <td>${a.target_class}</td>
+       <td><span class="badge ${a.status==='open'?'bg':a.status==='upcoming'?'bo':'bx'}">${a.status}</span></td>
+       <td>${a.close_datetime?new Date(a.close_datetime).toLocaleDateString('en-NG'):'—'}</td>
+       <td>${a.submissions||0}</td>
+       <td><button class="btn btn-o btn-xs" onclick="togglePublish(${a.id})">${a.is_published?'Unpublish':'Publish'}</button></td></tr>`).join('')
+      :'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No activities yet.</td></tr>';
+  }
+}
+
+async function loadRoster(){
+  const data=await api('GET','/admin/roster/');
+  const wrap=document.getElementById('roster-wrap');
+  if(!data||!Object.keys(data).length){wrap.innerHTML='<p style="color:var(--muted);text-align:center;padding:40px">No students registered yet.</p>';return}
+  wrap.innerHTML=Object.entries(data).map(([cls,students])=>`
+    <div style="margin-bottom:20px">
+      <div style="font-size:14px;font-weight:700;padding:9px 13px;background:linear-gradient(90deg,rgba(108,99,255,.08),transparent);border-left:3px solid var(--acc);border-radius:0 7px 7px 0;margin-bottom:9px">
+        📚 ${cls} — ${students.length} students
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Joined</th><th>Avg Score</th><th>Attempts</th></tr></thead>
+        <tbody>${students.map((s,i)=>`<tr>
+          <td>${i+1}</td><td><strong>${s.name}</strong></td><td style="color:var(--muted)">${s.email}</td>
+          <td>${s.date_joined}</td>
+          <td>${s.avg_score!==null?`<span class="badge ${s.avg_score>=75?'bg':s.avg_score>=60?'bo':'br'}">${s.avg_score}%</span>`:'—'}</td>
+          <td>${s.attempts}</td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    </div>`).join('');
+}
+
+async function loadQBank(){
+  populateSubjects();
+  const subj=document.getElementById('qb-sf').value;
+  const qs=await api('GET','/admin/questions/'+(subj?'?subject='+encodeURIComponent(subj):''));
+  document.getElementById('qb-tbl').innerHTML=Array.isArray(qs)&&qs.length?qs.map(q=>`<tr>
+    <td>${q.id}</td>
+    <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.text.substring(0,80)}${q.text.length>80?'…':''}</td>
+    <td>${q.subject_name||'—'}</td>
+    <td><span class="badge ${q.answer_type==='mcq'?'bb':'bo'}">${q.answer_type}</span></td>
+    <td>${q.image?'🖼️':'—'}</td>
+    <td>${q.options?q.options.length:0}</td>
+    <td><button class="btn btn-xs" style="background:#fee2e2;color:#b91c1c;border:none" onclick="deleteQ(${q.id})">Delete</button></td></tr>`).join('')
+    :'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No questions yet. Click "+ Add Question".</td></tr>';
+}
+
+async function deleteQ(id){if(!confirm('Delete this question?'))return;await api('DELETE','/admin/questions/'+id+'/');toast('Deleted');loadQBank()}
+function toggleQType(t){document.getElementById('nq-mcq-sec').style.display=t==='mcq'?'':'none'}
+function previewQImg(inp){const z=document.getElementById('nq-upz');z.classList.add('done');z.querySelector('p').textContent='✅ '+inp.files[0].name}
+
+async function saveQuestion(){
+  const subj=document.getElementById('nq-subj').value;
+  const type=document.getElementById('nq-type').value;
+  const text=document.getElementById('nq-text').value.trim();
+  const expl=document.getElementById('nq-expl').value.trim();
+  if(!text){toast('Please enter question text.','err');return}
+  if(!subj){toast('Please select a subject.','err');return}
+  const imgFile=document.getElementById('nq-img').files[0];
+  let res;
+  if(imgFile){
+    const fd=new FormData();fd.append('subject',subj);fd.append('answer_type',type);fd.append('text',text);fd.append('explanation',expl);fd.append('image',imgFile);
+    res=await api('POST','/admin/questions/',fd,true);
+  }else res=await api('POST','/admin/questions/',{subject:subj,answer_type:type,text,explanation:expl});
+  if(!res.id){toast(JSON.stringify(res),'err');return}
+  if(type==='mcq'){
+    const rows=document.querySelectorAll('#nq-opts .orow');
+    const ci=parseInt(document.querySelector('input[name="nq-cor"]:checked').value);
+    for(let i=0;i<rows.length;i++){
+      const t=rows[i].querySelector('input[type=text]').value.trim();
+      if(t)await api('POST',`/admin/questions/${res.id}/options/`,{text:t,is_correct:i===ci,order:i});
+    }
+  }
+  closeModal('modal-add-q');toast('Question added ✓');
+  document.getElementById('nq-text').value='';document.getElementById('nq-expl').value='';
+  document.getElementById('nq-img').value='';
+  const z=document.getElementById('nq-upz');z.classList.remove('done');z.querySelector('p').innerHTML='<strong>Click to upload</strong> image or diagram · JPG, PNG';
+  loadQBank();
+}
+
+async function createActivity(type,publish){
+  let payload={};
+  if(type==='test'){
+    const t=document.getElementById('ct-title').value.trim();
+    if(!t){toast('Please enter a title.','err');return}
+    payload={title:t,subject:document.getElementById('ct-subj').value||null,
+      target_class:document.getElementById('ct-cls').value,
+      question_count:parseInt(document.getElementById('ct-count').value)||20,
+      answer_type:document.getElementById('ct-atype').value,
+      description:document.getElementById('ct-desc').value,
+      time_limit_minutes:document.getElementById('ct-time').value||null,
+      open_datetime:document.getElementById('ct-open').value||null,
+      close_datetime:document.getElementById('ct-close').value||null,
+      show_answers:document.getElementById('ct-showans').value==='true',
+      randomise_order:document.getElementById('ct-rord').checked,
+      randomise_options:document.getElementById('ct-ropt').checked,
+      randomise_values:document.getElementById('ct-rval').checked,
+      allow_back:document.getElementById('ct-back').checked,
+      require_image:document.getElementById('ct-reqimg').checked,
+      draw_from_bank:true,activity_type:'test',is_published:publish};
+  }else if(type==='assignment'){
+    const t=document.getElementById('ca-title').value.trim();
+    if(!t){toast('Please enter a title.','err');return}
+    payload={title:t,subject:document.getElementById('ca-subj').value||null,
+      target_class:document.getElementById('ca-cls').value,
+      answer_type:document.getElementById('ca-atype').value,
+      close_datetime:document.getElementById('ca-close').value||null,
+      time_limit_minutes:document.getElementById('ca-time').value||null,
+      description:document.getElementById('ca-desc').value,
+      draw_from_bank:false,activity_type:'assignment',is_published:publish,question_count:10};
+  }else if(type==='assessment'){
+    const t=document.getElementById('aw-title').value.trim();
+    if(!t){toast('Please enter a title.','err');return}
+    payload={title:t,subject:document.getElementById('aw-subj').value||null,
+      target_class:document.getElementById('aw-cls').value,
+      time_limit_minutes:document.getElementById('aw-time').value||null,
+      open_datetime:document.getElementById('aw-open').value||null,
+      close_datetime:document.getElementById('aw-close').value||null,
+      show_answers:document.getElementById('aw-showans').checked,
+      question_count:parseInt(document.getElementById('aw-count').value)||10,
+      draw_from_bank:true,activity_type:'assessment',answer_type:'mcq',is_published:publish};
+  }
+  const res=await api('POST','/admin/activities/',payload);
+  if(res.id){toast(`${type} ${publish?'published ✓':'saved as draft'}`);loadDash()}
+  else toast(JSON.stringify(res),'err');
+}
+
+async function togglePublish(id){
+  const res=await api('POST',`/admin/activities/${id}/publish/`);
+  toast(res.published?'Published ✓':'Unpublished');loadDash();
+}
+
+let aQCount=0;
+function addAssignQ(){
+  aQCount++;
+  const div=document.createElement('div');div.className='qb';
+  div.innerHTML=`<div class="qb-n">Question ${aQCount}</div>
+    <div class="fg"><label>Question Text</label><textarea placeholder="Type the question here…"></textarea></div>
+    <div class="fg"><label>Add Image (optional)</label>
+      <div class="upz" onclick="this.querySelector('input').click()">
+        <input type="file" accept="image/*" style="display:none" onchange="this.closest('.upz').classList.add('done');this.closest('.upz').querySelector('p').textContent='✅ '+this.files[0].name">
+        <div class="ui">🖼️</div><p><strong>Click to upload</strong> image or diagram</p>
+      </div>
+    </div>
+    <button class="rm" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('assign-qs').appendChild(div);
+}
+
+let vidFile=null;
+function handleVidFile(inp){vidFile=inp.files[0];if(vidFile){const z=document.getElementById('v-upz');z.classList.add('done');z.querySelector('p').textContent='✅ '+vidFile.name}}
+
+async function uploadVideo(){
+  const title=document.getElementById('v-title').value.trim();
+  const subj=document.getElementById('v-subj').value;
+  const cls=document.getElementById('v-cls').value;
+  const url=document.getElementById('v-url').value.trim();
+  const desc=document.getElementById('v-desc').value.trim();
+  if(!title){toast('Please enter a video title.','err');return}
+  let res;
+  if(vidFile){
+    const fd=new FormData();fd.append('title',title);fd.append('subject',subj||'');fd.append('target_class',cls);fd.append('external_url',url);fd.append('description',desc);fd.append('video_file',vidFile);
+    res=await api('POST','/admin/videos/',fd,true);
+  }else res=await api('POST','/admin/videos/',{title,subject:subj||null,target_class:cls,external_url:url,description:desc});
+  if(res.id){toast('Video published ✓');document.getElementById('v-title').value='';document.getElementById('v-url').value='';document.getElementById('v-desc').value='';vidFile=null;const z=document.getElementById('v-upz');z.classList.remove('done');z.querySelector('p').innerHTML='<strong>Click to upload</strong> MP4, MOV · Or paste YouTube link above';loadVideos()}
+  else toast(JSON.stringify(res),'err');
+}
+
+async function loadVideos(){
+  populateSubjects();
+  const vids=await api('GET','/admin/videos/');
+  document.getElementById('vid-tbl').innerHTML=Array.isArray(vids)&&vids.length?vids.map(v=>`<tr>
+    <td><strong>${v.title}</strong></td><td>${v.subject_name||'—'}</td><td>${v.target_class}</td>
+    <td><span class="badge ${v.is_visible?'bg':'bx'}">${v.is_visible?'Visible':'Hidden'}</span></td>
+    <td>${new Date(v.uploaded_at).toLocaleDateString('en-NG')}</td>
+    <td>
+      <button class="btn btn-o btn-xs" onclick="toggleVid(${v.id})">${v.is_visible?'Hide':'Show'}</button>
+      <button class="btn btn-xs" style="background:#fee2e2;color:#b91c1c;border:none;margin-left:4px" onclick="deleteVid(${v.id})">Delete</button>
+    </td></tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No videos yet.</td></tr>';
+}
+async function toggleVid(id){await api('POST',`/admin/videos/${id}/toggle/`);loadVideos();toast('Visibility updated')}
+async function deleteVid(id){if(!confirm('Delete this video?'))return;await api('DELETE',`/admin/videos/${id}/`);toast('Deleted');loadVideos()}
+
+async function loadSubmissions(){
+  const subs=await api('GET','/admin/submissions/');
+  const list=document.getElementById('sub-list');
+  document.getElementById('sub-count').textContent=(Array.isArray(subs)?subs.length:0)+' pending';
+  if(!Array.isArray(subs)||!subs.length){list.innerHTML='<div style="text-align:center;padding:36px;color:var(--muted)">✓ No pending submissions. All caught up!</div>';return}
+  list.innerHTML=subs.map(s=>`
+    <div class="sub-card">
+      <div class="sub-hd">
+        <div><div class="sub-nm">${s.student_name} <span class="badge bx" style="margin-left:5px">${s.student_class}</span></div>
+          <div class="sub-mt">📋 ${s.activity_title} · ${s.activity_type}</div></div>
+        ${s.uploaded_image?`<a href="${s.uploaded_image}" target="_blank" class="btn btn-o btn-xs">📷 View Image</a>`:''}
+      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Question</div>
+      <div style="font-size:12px;margin-bottom:9px;line-height:1.5">${s.question_text}</div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase">Student's Answer</div>
+      <div class="ans-box">${s.typed_answer||'(No typed answer)'}</div>
+      <div style="display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;margin-top:9px">
+        <div style="flex:1;min-width:150px"><label>Grade / Mark</label><input type="text" id="gr-${s.id}" placeholder="e.g. A, 85%…"></div>
+        <div style="flex:2;min-width:190px"><label>Feedback (optional)</label><input type="text" id="fb-${s.id}" placeholder="Written feedback…"></div>
+        <button class="btn btn-g btn-xs" onclick="saveGrade(${s.id})">Save Grade ✓</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveGrade(id){
+  const grade=document.getElementById('gr-'+id).value.trim();
+  const feedback=document.getElementById('fb-'+id).value.trim();
+  if(!grade){toast('Please enter a grade.','err');return}
+  const res=await api('POST',`/admin/grade/${id}/`,{grade,feedback});
+  if(res.detail==='Grade saved.'){toast('Grade saved ✓');loadSubmissions()}
+  else toast('Failed to save grade.','err');
+}
+
+async function loadGrades(){
+  const cls=document.getElementById('grade-cls-f').value;
+  const data=await api('GET','/admin/grade-centre/'+(cls?'?class='+cls:''));
+  gradeData=Array.isArray(data)?data:[];
+  document.getElementById('grade-tbl').innerHTML=gradeData.length?gradeData.map(g=>`<tr>
+    <td><strong>${g.student}</strong></td><td>${g.student_class}</td><td>${g.activity}</td>
+    <td><span class="badge ${g.activity_type==='test'?'bb':'bo'}">${g.activity_type}</span></td>
+    <td>${g.score!==null?`<span class="badge ${g.score>=75?'bg':g.score>=60?'bo':'br'}">${g.score}%</span>`:'<span class="badge bx">Pending</span>'}</td>
+    <td>${g.is_graded?'<span class="badge bg">✓</span>':'<span class="badge bx">No</span>'}</td>
+    <td>${g.submitted_at||'—'}</td></tr>`).join('')
+    :'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No submissions yet.</td></tr>';
+}
+
+function exportCSV(){
+  if(!gradeData.length){toast('No data to export','err');return}
+  const hdr=['Student','Class','Activity','Type','Score','Graded','Submitted'];
+  const rows=gradeData.map(g=>[`"${g.student}"`,g.student_class,`"${g.activity}"`,g.activity_type,g.score??'',g.is_graded?'Yes':'No',g.submitted_at??'']);
+  const csv=[hdr,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='eduspark_grades.csv';a.click();toast('CSV exported ✓');
+}
+
+(async()=>{
+  const me=await api('GET','/auth/me/');
+  if(me&&me.id&&me.is_staff){
+    const stats=await api('GET','/admin/stats/');
+    if(stats.total_students!==undefined){
+      document.getElementById('view-login').style.display='none';
+      document.getElementById('sidebar').style.display='flex';
+      document.getElementById('portal').style.display='flex';
+      document.getElementById('sb-name').textContent=(me.first_name||'Admin')+' '+(me.surname||'');
+      await initPortal();
+    }
+  }
+})();
+</script>
+</body>
+</html>

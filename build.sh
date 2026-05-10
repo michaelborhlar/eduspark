@@ -13,9 +13,6 @@ mkdir -p static staticfiles media
 echo ">>> Collecting static files..."
 python manage.py collectstatic --noinput
 
-echo ">>> Making migrations (auto-generate from models)..."
-python manage.py makemigrations core --noinput
-
 echo ">>> Running migrations..."
 python manage.py migrate --noinput
 
@@ -36,5 +33,4 @@ for name in subjects:
         created += 1
 print(f'Subjects ready: {Subject.objects.count()} total ({created} new)')
 "
-
 echo ">>> Build complete!"

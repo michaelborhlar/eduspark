@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
 
 CLASS_CHOICES = [
@@ -18,11 +18,16 @@ ACTIVITY_CHOICES = [
     ('assessment','Weekly Assessment'),
 ]
 
-# ── Student user ───────────────────────────────────────────
+# ── Student Manager ────────────────────────────────────────
 class StudentManager(BaseUserManager):
-    def create_user(self, first_name, surname, student_class, password=None, **extra):
-        user = self.model(first_name=first_name, surname=surname,
-                          student_class=student_class, **extra)
+    def create_user(self, first_name, surname, student_class,
+                    password=None, **extra):
+        user = self.model(
+            first_name=first_name,
+            surname=surname,
+            student_class=student_class,
+            **extra
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -31,9 +36,11 @@ class StudentManager(BaseUserManager):
                          student_class='SSS1', password=None, **extra):
         extra.setdefault('is_staff', True)
         extra.setdefault('is_superuser', True)
-        return self.create_user(first_name, surname, student_class, password, **extra)
+        return self.create_user(
+            first_name, surname, student_class, password, **extra)
 
-class Student(AbstractBaseUser, PermissionsMixin):
+# ── Student (custom user — NO PermissionsMixin to avoid auth.Group issues) ──
+class Student(AbstractBaseUser):
     first_name    = models.CharField(max_length=100)
     surname       = models.CharField(max_length=100)
     email         = models.EmailField(blank=True, null=True)
@@ -41,22 +48,38 @@ class Student(AbstractBaseUser, PermissionsMixin):
     date_joined   = models.DateTimeField(default=timezone.now)
     is_active     = models.BooleanField(default=True)
     is_staff      = models.BooleanField(default=False)
+    is_superuser  = models.BooleanField(default=False)
 
     USERNAME_FIELD  = 'id'
-    REQUIRED_FIELDS = ['first_name','surname','student_class']
+    REQUIRED_FIELDS = ['first_name', 'surname', 'student_class']
     objects = StudentManager()
 
-    @property
-    def full_name(self): return f'{self.first_name} {self.surname}'
-    def __str__(self): return f'{self.full_name} ({self.student_class})'
-    class Meta: ordering = ['surname','first_name']
+    # Minimal permission stubs so Django admin works
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
 
-# ── Class Roster (auto-created on signup) ──────────────────
+    def has_module_perms(self, app_label):
+        return self.is_superuser
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.surname}'
+
+    def __str__(self):
+        return f'{self.full_name} ({self.student_class})'
+
+    class Meta:
+        ordering = ['surname', 'first_name']
+
+# ── Class Roster ───────────────────────────────────────────
 class ClassRoster(models.Model):
-    student       = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='roster')
+    student       = models.OneToOneField(
+        Student, on_delete=models.CASCADE, related_name='roster')
     student_class = models.CharField(max_length=10, choices=CLASS_CHOICES)
     enrolled_at   = models.DateTimeField(auto_now_add=True)
-    def __str__(self): return f'{self.student.full_name} → {self.student_class}'
+
+    def __str__(self):
+        return f'{self.student.full_name} → {self.student_class}'
 
 # ── Subject ────────────────────────────────────────────────
 class Subject(models.Model):
@@ -65,31 +88,40 @@ class Subject(models.Model):
 
 # ── Question Bank ──────────────────────────────────────────
 class Question(models.Model):
-    subject     = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')
+    subject     = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name='questions')
     text        = models.TextField()
     image       = models.ImageField(upload_to='questions/', blank=True, null=True)
-    answer_type = models.CharField(max_length=20, choices=ANSWER_CHOICES, default='mcq')
+    answer_type = models.CharField(
+        max_length=20, choices=ANSWER_CHOICES, default='mcq')
     explanation = models.TextField(blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
-    def __str__(self): return f'[{self.subject}] {self.text[:70]}'
+
+    def __str__(self):
+        return f'[{self.subject}] {self.text[:70]}'
 
 class MCQOption(models.Model):
-    question   = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    question   = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name='options')
     text       = models.CharField(max_length=500)
     is_correct = models.BooleanField(default=False)
     order      = models.PositiveSmallIntegerField(default=0)
+
     class Meta: ordering = ['order']
     def __str__(self): return f'{"✓" if self.is_correct else "✗"} {self.text[:50]}'
 
-# ── Activity (Test / Assignment / Assessment) ──────────────
+# ── Activity ───────────────────────────────────────────────
 class Activity(models.Model):
     title              = models.CharField(max_length=255)
     description        = models.TextField(blank=True)
     activity_type      = models.CharField(max_length=20, choices=ACTIVITY_CHOICES)
-    subject            = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
-    target_class       = models.CharField(max_length=10,
-                           choices=CLASS_CHOICES + [('ALL','All Classes')], default='ALL')
-    answer_type        = models.CharField(max_length=20, choices=ANSWER_CHOICES, default='mcq')
+    subject            = models.ForeignKey(
+        Subject, on_delete=models.SET_NULL, null=True, blank=True)
+    target_class       = models.CharField(
+        max_length=10, default='ALL',
+        choices=CLASS_CHOICES + [('ALL','All Classes')])
+    answer_type        = models.CharField(
+        max_length=20, choices=ANSWER_CHOICES, default='mcq')
     draw_from_bank     = models.BooleanField(default=True)
     question_count     = models.PositiveIntegerField(default=10)
     randomise_values   = models.BooleanField(default=True)
@@ -115,10 +147,12 @@ class Activity(models.Model):
     @property
     def is_open(self): return self.status == 'open'
 
-    def __str__(self): return f'[{self.activity_type.upper()}] {self.title}'
+    def __str__(self):
+        return f'[{self.activity_type.upper()}] {self.title}'
 
 class ActivityQuestion(models.Model):
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='direct_questions')
+    activity = models.ForeignKey(
+        Activity, on_delete=models.CASCADE, related_name='direct_questions')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     order    = models.PositiveSmallIntegerField(default=0)
     class Meta: ordering = ['order']
@@ -126,35 +160,46 @@ class ActivityQuestion(models.Model):
 # ── Learning Video ─────────────────────────────────────────
 class LearningVideo(models.Model):
     title        = models.CharField(max_length=255)
-    subject      = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
-    target_class = models.CharField(max_length=10,
-                       choices=CLASS_CHOICES + [('ALL','All Classes')], default='ALL')
+    subject      = models.ForeignKey(
+        Subject, on_delete=models.SET_NULL, null=True, blank=True)
+    target_class = models.CharField(
+        max_length=10, default='ALL',
+        choices=CLASS_CHOICES + [('ALL','All Classes')])
     video_file   = models.FileField(upload_to='videos/', blank=True, null=True)
     external_url = models.URLField(blank=True)
     description  = models.TextField(blank=True)
     is_visible   = models.BooleanField(default=True)
     uploaded_at  = models.DateTimeField(auto_now_add=True)
+
     def __str__(self): return self.title
 
 # ── Attempt & Answers ──────────────────────────────────────
 class Attempt(models.Model):
-    student       = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attempts')
-    activity      = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='attempts')
+    student       = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name='attempts')
+    activity      = models.ForeignKey(
+        Activity, on_delete=models.CASCADE, related_name='attempts')
     started_at    = models.DateTimeField(auto_now_add=True)
     submitted_at  = models.DateTimeField(null=True, blank=True)
     score         = models.FloatField(null=True, blank=True)
     is_graded     = models.BooleanField(default=False)
     question_seed = models.BigIntegerField(default=0)
-    class Meta: unique_together = ('student','activity')
-    def __str__(self): return f'{self.student} → {self.activity} | {self.score}'
+
+    class Meta: unique_together = ('student', 'activity')
+    def __str__(self): return f'{self.student} → {self.activity}'
 
 class Answer(models.Model):
-    attempt          = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name='answers')
+    attempt          = models.ForeignKey(
+        Attempt, on_delete=models.CASCADE, related_name='answers')
     question         = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_option  = models.ForeignKey(MCQOption, null=True, blank=True, on_delete=models.SET_NULL)
+    selected_option  = models.ForeignKey(
+        MCQOption, null=True, blank=True, on_delete=models.SET_NULL)
     typed_answer     = models.TextField(blank=True)
-    uploaded_image   = models.ImageField(upload_to='answers/', blank=True, null=True)
+    uploaded_image   = models.ImageField(
+        upload_to='answers/', blank=True, null=True)
     is_correct       = models.BooleanField(null=True, blank=True)
     teacher_grade    = models.CharField(max_length=50, blank=True)
     teacher_feedback = models.TextField(blank=True)
-    def __str__(self): return f'Q{self.question_id} | {self.attempt.student.full_name}'
+
+    def __str__(self):
+        return f'Q{self.question_id} | {self.attempt.student.full_name}'
